@@ -1,0 +1,112 @@
+It is time to create something!
+-> A small webpage with a blog structure is chosen.
+
+It is gonna be done with flask, python.
+
+My steps so far:
+
+I. GETTING STARTED
+
+1). Create a new virtual environment for the project, named 'flaskblog'.
+
+2). Create a new folder on a desktop and set path there.
+
+3). Go to the flask page on-line and cope code from there, which does:
+Creates an instance of flask object (it is the project itself), start it from the terminal.
+Runs the web server. @app.route('/home') -> can navigate into the 'directories' on the web server.
+Good practice is to check sorce code of the webpage after changes.
+
+4). Created /home and /about, which are empty yet.
+
+5). To automatically make server update itself, without restarting it -> one should use debug mode (idk why, but it is so).
+
+
+II. TEMPLATES
+
+1). Running webpage sourcecode from def homepage(): return ...
+will become real messy if we do it this way very soon, thus -> create templates folder, where i put code for each webpage separately
+(my shortcut for creating minimal html code in sublime text is 'html, press tab')
+this templates have to be rendered inside functions by a render function -> import render_template, to be able to be executed
+inside a func, representing the page -> return render_template(<filename>) <- the one from the templates folder
+
+2). I have created somu dummy data, namely blog posts. Inside a render_template function i command it to use this posts variable to make it
+avaliable in the template (in particular in home func)
+-> render_template('home.html', posts=posts) <- makes variable posts from the main file (so far) in a template,
+ and fixes posts(which is a list of dictionary) contents inside posts variable.
+
+3). To insert codeblocks inside html -> {%<code here>%} in this templating engine (Ginger2 for flask)
+i made a for loop, we are looping through the posts and returning some stuff {{notation is used for returning smth}}
+
+4). Lets add a title. If there is no title -> Use default (flaskapp or smth)
+For homepage webpage sees that there is no title passed, it will use the default one,
+For About page, the title is passed, so it is printing it out.
+So far the code in About and Home templates looks almost the same
+
+5). Lets use template inheritance. New file layout.html will include info about the templates.
+I create a block in a layout. The block is the part other templates will provide their code to. The canvas is from the layout.html.
+In templates i only keep stuff, which is unique for the template (homepage, about etc).
+In layout.html a codeblock was created. This block can be filled with stuff i provide inside templates
+{% extends "layout.html" %} <- put into this file, {% block content %} <- content is the name of the block in layout.html
+<code i insert (<h1> About Page </h1>)> - {% endblock content %} <- i command: close the block!
+The templated versions will give in their specific info to the <body>.
+
+6). Lets use bootstrap for adding nice styles to the website.
+i open the starter page.
+I grab metatags and css from there and put it into the layout <head>
+Javascript stuff -> into body
+also add some stuff to add good spacing etc.
+grab snippets from someone else to make a navigation and other design stuff
+
+7). Additional design files that are static (JS, CSS) need to be located in a 'static' directory
+i will pull main.css into the webpage to format it etc. with the help of url_for function
+
+
+III. FORMS AND USER INPUT
+
+1). I need registration form and some other forms.
+I am not going to invent a wheel and build validation from scratch, i will download is from somewhere.
+pip install flask-wtf. (that is not 'what the f~')
+My registration form inherits from FlaskForm from flask_wtf
+
+2).StringField - is just a typing field for smth (email, username or etc)
+StringField(<What will be preritten in this field>, <validators=[from wtforms.validators import DataRequiered, Length, Email, EqualTo or something]>)
+PasswordField - fiels specificly made for passwords
+The registration form requires some constraints,
+=> username has to be a string of certain length
+Thus i use validators from wtforms.validators, this class will validate stuff
+-> StringField('Username', validators=[<my validators here, e.g. DataRequired(empty not allowed), Length(min=n, max=m)>])
+=> email has to be a string of certain length
+-> StringField('Email', validators=[DataRequired(), Email()-has to be formatted as email, not a random string])
+=> password should match my criteria, put them into the validators
+-> password = PasswordField('Password', validators=[DataRequired(), Length(min=2)])
+=> Confirm password
+-> = PasswordField('Password confirmation',
+        validators=[EqualTo('password')])
+=> submit = StringField('Sign Up') Will create something like a button
+
+3). LoginForm has also to be present
+i will add a remember field - gonna be BooleanField
+
+4). Some security stuff has to be added, idk how this works actually, but i generate secret key in python
+secrets.token_hex(16) => ...
+app.config['SECRET_KEY'] = '...'
+
+5). Now i have to make separate pages for the registration and login, as already did for home and about
+in register template i make a small table using css and stuff to make fields to type in
+Now, when the form is ready, i test registration, but it prints out that the method is not allowed
+i go to the flaskblog.py and add methods to @app_route for the /register
+ @app.route('/register', methods=['GET', 'POST'])
+Now after the registration nothing happens
+i want some actions from the site -> validate on submit
+i can use flash message, which is in flask -> from flask import flash
+so the alert is raised and i redirect the user to the homepage
+-> url_for('home') # url_for redirects to a function, that leads to the route
+In layout i copypaste code to generate alert messages
+I copypaste code to alert mistakes if invalid registration
+
+6). All the same for the login form.
+I make a code for mocking the login, and copypasted the code to make alerts
+to show success or fail
+
+7). Pushed to GitHub for the first time
+
