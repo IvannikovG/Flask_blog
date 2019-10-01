@@ -9,28 +9,30 @@ I. GETTING STARTED
 
 1). Create a new virtual environment for the project, named 'flaskblog'.
 
-2). Create a new folder on a desktop and set path there.
+2). Create a new folder on a desktop and set path there. ( WHY? For no reason)
 
-3). Go to the flask page on-line and cope code from there, which does:
+3). Go to the flask page on-line and copy code from there, which does:
 Creates an instance of flask object (it is the project itself), start it from the terminal.
 Runs the web server. @app.route('/home') -> can navigate into the 'directories' on the web server.
-Good practice is to check sorce code of the webpage after changes.
+Good practice is to check source code of the webpage after changes.
 
 4). Created /home and /about, which are empty yet.
 
 5). To automatically make server update itself, without restarting it -> one should use debug mode (idk why, but it is so).
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
 II. TEMPLATES
 
-1). Running webpage sourcecode from def homepage(): return ...
+1). Running webpage source code from def homepage(): return ...
 will become real messy if we do it this way very soon, thus -> create templates folder, where i put code for each webpage separately
 (my shortcut for creating minimal html code in sublime text is 'html, press tab')
 this templates have to be rendered inside functions by a render function -> import render_template, to be able to be executed
 inside a func, representing the page -> return render_template(<filename>) <- the one from the templates folder
 
 2). I have created somu dummy data, namely blog posts. Inside a render_template function i command it to use this posts variable to make it
-avaliable in the template (in particular in home func)
+available in the template (in particular in home func)
 -> render_template('home.html', posts=posts) <- makes variable posts from the main file (so far) in a template,
  and fixes posts(which is a list of dictionary) contents inside posts variable.
 
@@ -110,3 +112,75 @@ to show success or fail
 
 7). Pushed to GitHub for the first time
 
+
+IV. DATABASE WITH FLASK-SQLALCHEMY
+
+1). To be able to work with the database, I need some tool, is this case it will be SQLAlchemy package and I work for now with SQLite, because it is the easiest to start with. My database so far will be stored as a file on the computer.
+So I import the module and add into the app.config a key-value:
+-> app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite///<relative path from the current path>'
+And I have to create a database instance
+-> ab = SQLAlchemy(app)
+Now I have my database instance
+The structure of the database will be represented as a system of classes
+There will be a separate class for a User.
+ !!!https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/!!!
+User will have an id (db.Column, primary_key=True) and it is a main feature of a user, his id
+User will have a username of max length I have provided in a registration form, it is a unique attribute (unique=True), nullable=False)
+Almost the same for the email attribute
+I also add the attribute for the image_file. Each user starts with a default profile image, so it is not unique, and there is a default='default.jpg'
+
+2). Post is a separate class, each post has an id, date posted, by default it is the current time from the date time module
+User and Post classes are in relation (multiple to many) which means that a User can have multiple posts, thus I say that a user model will have a relationship on the db level with the post
+https://docs.sqlalchemy.org/en/13/orm/backref.html
+Relationship between user and post is established.
+Now, when the classes are ready it is time to start the db.
+In terminal I import a db from my app, then I db.create_all() to create the database, consisting of tables I specified for the users and posts. A new file representing the database was created. (Site.db that I have specified)
+To see how this all works, I import my models -> User and Post models
+I also create instances of the imported classes. user_1 = User(username=..., pass=..., ...) default and unique values are assigned automatically. Classes take keyword arguments. Users are also to be added into the db.
+https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
+Do not forget to commit and Eureka!
+So, as user is a db.Model he seems to be committed to the user database, I am able to access its attributes
+
+I will create a post too. It is only possible to do, after I get a user from the db.
+
+
+V. PACKAGE STRUCTURE
+
+1). At this point the flaskblog does not have a proper structure. Example: I want to move out my models from the main file (db models are going to be stored is another file). Because of the way my imports are created it is not possible to do a cross reference.
+Project structure is to be reorganised.
+2). I am creating an __init__, where my imports are to be stored, also the database inititation. I create routes.py for the routes separately. So in the original file there is only an if statement to run the application. Now the main file is called run.py
+Now to import stuff I use 'from flaskblog(a folder ewith everything) import app. App variable is inside __init__.py
+It is better to separate all logical parts of the app into the separate files and then clean up the imports.
+The variables from init seem to be in global environment, so I can grab them just typing from <directory name with init> import <variable I need>
+
+.
+├── How?.txt
+├── flaskblog
+│   ├── __init__.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── routes.py
+│   ├── site.db
+│   ├── static
+│   │   └── main.css
+│   └── templates
+│       ├── about.html
+│       ├── home.html
+│       ├── layout.html
+│       ├── login.html
+│       └── register.html
+└── run.py
+
+This is the tree structure of the app so far. 
+-> __init__.py initialises all general stuff for the app (db, the app itself
+ 'app = Flask(__name__)'
+-> FORMS contain the registration form and login form
+(https://flask.palletsprojects.com/en/1.0.x/patterns/wtforms/ and https://flask-login.readthedocs.io/en/latest/)
+-> MODELS are instances of the tables, from which my database consists of. 
+(https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/)
+-> ROUTES are tools to say the app which url to go to when route() is run.
+(https://hackersandslackers.com/the-art-of-building-flask-routes/ and https://flask.palletsprojects.com/en/1.1.x/quickstart/)
+-> site is just a database file (so far, I could have deleted but I did not)
+-> STATIC and TEMPLATES are things for generating the webpages, which I have mostly no-brainly stolen.
+
+Pushing to the GitHub!
